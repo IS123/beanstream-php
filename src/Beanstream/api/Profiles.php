@@ -1,205 +1,200 @@
-<?php 	namespace Beanstream;
+<?php
 
+namespace Beanstream;
 
 /**
  * Profiles class to handle profile and card actions
- *  
+ *
  * @author Kevin Saliba
  */
-class Profiles {
-	
-
+class Profiles
+{
     /**
      * Profiles Endpoint object
-     * 
-     * @var string $_endpoint
-     */	
-	protected $_endpoint;
+     *
+     * @var string $endpoints
+     */
+    protected $endpoints;
 
-	/**
+    /**
      * HttpConnector object
-	 * 
-     * @var	\Beanstream\HttpConnector	$_connector
-     */	
-	protected $_connector;
-	
-	
+     *
+     * @var \Beanstream\HttpConnector   $httpConnector
+     */
+    protected $httpConnector;
+
     /**
      * Constructor
-     * 
-	 * Inits the appropriate endpoint and httpconnector objects 
-	 * Sets all of the Profiles class properties
-	 * 
+     *
+     * Inits the appropriate endpoint and httpconnector objects
+     * Sets all of the Profiles class properties
+     *
      * @param \Beanstream\Configuration $config
-     */	
-	function __construct(Configuration $config) {
+     */
+    public function __construct(Configuration $config)
+    {
+        // Init endpoint
+        $this->endpoints = new Endpoints($config->getPlatform(), $config->getApiVersion());
 
-		//init endpoint
-		$this->_endpoint = new Endpoints($config->getPlatform(), $config->getApiVersion());
-		
-		//init http connector
-		$this->_connector = new HttpConnector(base64_encode($config->getMerchantId().':'.$config->getApiKey()));
-		
-	}
+        // Init http connector
+        $this->httpConnector = new HttpConnector(base64_encode($config->getMerchantId().':'.$config->getApiKey()));
+    }
 
-	
     /**
      * createProfile() function - Create a new profile
      * @link http://developer.beanstream.com/documentation/tokenize-payments/create-new-profile/
-     * 
+     *
      * @param array $data Profile data
      * @return string Profile Id (aka customer_code)
      */
-	public function createProfile($data = NULL) {
-        
-		//get profiles endpoint
-		$endpoint =  $this->_endpoint->getProfilesURL();
-		
-		//process as is
-		$result = $this->_connector->processTransaction('POST', $endpoint, $data);
+    public function createProfile($data = null)
+    {
+        // Get profiles endpoint
+        $endpoint = $this->endpoints->getProfilesURL();
 
-		//send back the new customer code
+        // Process as is
+        $result = $this->httpConnector->processTransaction('POST', $endpoint, $data);
+
+        // Send back the new customer code
         return $result['customer_code'];
     }
-	
+
     /**
      * getProfile() function - Retrieve a profile
      * @link http://developer.beanstream.com/documentation/tokenize-payments/retrieve-profile/
-     * 
+     *
      * @param string $profile_id Profile Id
      * @return array Profile data
      */
-    public function getProfile($profile_id) {
+    public function getProfile($profile_id)
+    {
+        // Get this profile's endpoint
+        $endpoint = $this->endpoints->getProfileURI($profile_id);
 
-		//get this profile's endpoint
-		$endpoint =  $this->_endpoint->getProfileURI($profile_id);
-		
-		//process as is
-		$result = $this->_connector->processTransaction('GET', $endpoint, NULL);
-        
-		//unset($result['code'], $result['message']); //not sure why this was being done.. why not give it all back?
-		
+        // Process as is
+        $result = $this->httpConnector->processTransaction('GET', $endpoint, null);
+
+        // Unset($result['code'], $result['message']); // Not sure why this was being done.. why not give it all back?
+
         return $result;
     }
-	
+
     /**
      * updateProfile() function - Update a profile via PUT
      * @link http://developer.beanstream.com/documentation/tokenize-payments/update-profile/
-     * 
+     *
      * @param string $profile_id Profile Id
      * @param array $data Profile data
      * @return bool TRUE
      */
-    public function updateProfile($profile_id, $data = NULL) {
-    	
-		//get this profile's endpoint
-		$endpoint =  $this->_endpoint->getProfileURI($profile_id);
-				
-		//process as PUT
-		$result = $this->_connector->processTransaction('PUT', $endpoint, $data);
-		
-        return TRUE;
+    public function updateProfile($profile_id, $data = null)
+    {
+        // Get this profile's endpoint
+        $endpoint = $this->endpoints->getProfileURI($profile_id);
+
+        // Process as PUT
+        $result = $this->httpConnector->processTransaction('PUT', $endpoint, $data);
+
+        return true;
     }
-	
+
     /**
      * deleteProfile() function - Delete a profile via DELETE http method
      * @link http://developer.beanstream.com/documentation/tokenize-payments/delete-profile/
-     * 
+     *
      * @param string $profile_id Profile Id
      * @return bool TRUE
      */
-    public function deleteProfile($profile_id) {
-    	
-		//get this profile's endpoint
-		$endpoint =  $this->_endpoint->getProfileURI($profile_id);
-				
-		//process as DELETE
-		$result = $this->_connector->processTransaction('DELETE', $endpoint, NULL);
-		
-        return TRUE;
+    public function deleteProfile($profile_id)
+    {
+        // Get this profile's endpoint
+        $endpoint = $this->endpoints->getProfileURI($profile_id);
+
+        // Process as DELETE
+        $result = $this->httpConnector->processTransaction('DELETE', $endpoint, null);
+
+        return true;
     }
-	
+
     /**
      * getCards() function - Retrieve all cards in a profile
      * @link http://developer.beanstream.com/documentation/tokenize-payments/retrieve-cards-profile/
-     * 
+     *
      * @param string $profile_id Profile Id
      * @return array Cards data
      */
-    public function getCards($profile_id) {
+    public function getCards($profile_id)
+    {
+        // Get this profile's cards endpoint
+        $endpoint = $this->endpoints->getCardsURI($profile_id);
 
-		//get this profile's cards endpoint
-		$endpoint =  $this->_endpoint->getCardsURI($profile_id);
-		
-		//process as is
-		$result = $this->_connector->processTransaction('GET', $endpoint, NULL);
-		
-		//return cards
+        // Process as is
+        $result = $this->httpConnector->processTransaction('GET', $endpoint, null);
+
+        // Return cards
         return $result;
     }
 
     /**
      * addCard() function - Add a card to a profile
      * @link http://developer.beanstream.com/documentation/tokenize-payments/add-card-profile/
-     * 
+     *
      * @param string $profile_id Profile Id
      * @param array $data Card data
      * @return bool TRUE see note below
      */
     public function addCard($profile_id, $data)
     {
-		
-		//get profiles cards endpoint
-		$endpoint =  $this->_endpoint->getCardsURI($profile_id);
-		
-		//process as is
-		$result = $this->_connector->processTransaction('POST', $endpoint, $data);
-		
+        // Get profiles cards endpoint
+        $endpoint = $this->endpoints->getCardsURI($profile_id);
+
+        // Process as is
+        $result = $this->httpConnector->processTransaction('POST', $endpoint, $data);
+
         /*
          * XXX it would be more appropriate to return newly added card_id,
          * but API does not return it in result
          */
-        return TRUE;
+        return true;
     }
-	
+
     /**
      * updateCard() function - Update a single card in a profile
      * @link http://developer.beanstream.com/documentation/tokenize-payments/update-card-profile/
-     * 
+     *
      * @param string $profile_id Profile Id
      * @param string $card_id Card Id
      * @param array $data Card data
      *
      * @return array Result
      */
-    public function updateCard($profile_id, $card_id, $data) {
+    public function updateCard($profile_id, $card_id, $data)
+    {
+        // Get this card's endpoint
+        $endpoint = $this->endpoints->getCardURI($profile_id, $card_id);
 
-		//get this card's endpoint
-		$endpoint =  $this->_endpoint->getCardURI($profile_id, $card_id);
-		
-		//process as is
-		$result = $this->_connector->processTransaction('PUT', $endpoint, $data);
-		
+        // Process as is
+        $result = $this->httpConnector->processTransaction('PUT', $endpoint, $data);
+
         return $result;
     }
-		
+
     /**
      * deleteCard() function - Delete a card from a profile via DELETE http method
      * @link http://developer.beanstream.com/documentation/tokenize-payments/delete-card-profile/
-     * 
+     *
      * @param string $profile_id Profile Id
      * @param string $card_id Card Id
      * @return bool TRUE
      */
-    public function deleteCard($profile_id, $card_id) {
-    	
-		//get this card's endpoint
-		$endpoint =  $this->_endpoint->getCardURI($profile_id, $card_id);
-				
-		//process as DELETE
-		$result = $this->_connector->processTransaction('DELETE', $endpoint, NULL);
-		
-        return TRUE;
+    public function deleteCard($profile_id, $card_id)
+    {
+        // Get this card's endpoint
+        $endpoint = $this->endpoints->getCardURI($profile_id, $card_id);
+
+        // Process as DELETE
+        $result = $this->httpConnector->processTransaction('DELETE', $endpoint, null);
+
+        return true;
     }
-	
 }

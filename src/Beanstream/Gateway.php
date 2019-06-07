@@ -1,6 +1,8 @@
-<?php	namespace Beanstream;
+<?php
 
-//TODO implement loader
+namespace Beanstream;
+
+// TODO implement loader
 require_once 'Exception.php';
 require_once 'Configuration.php';
 require_once 'communications/Endpoints.php';
@@ -9,115 +11,117 @@ require_once 'api/Payments.php';
 require_once 'api/Profiles.php';
 require_once 'api/Reporting.php';
 
-
 /**
  * Gateway class - Main class to facilitate comms with Beanstream Gateway,
- *  
+ *
  * @author Kevin Saliba
  */
-class Gateway {
-
-	/**
+class Gateway
+{
+    /**
      * Config object
-	 * 
-	 * Holds mid, apikey, platform, api version
-     * 
-     * @var	\Beanstream\Configuration	$_config
+     *
+     * Holds mid, apikey, platform, api version
+     *
+     * @var \Beanstream\Configuration   $config
      */
-    protected $_config;
-    
-	
-	/**
-	 * API Objects
-	 * 
-	 * Holds API objects with appropriate config
-	 * 
-	 * @var	\Beanstream\Payments	$_paymentsAPI
-	 * @var	\Beanstream\Profiles	$_profilesAPI
-	 * @var	\Beanstream\Reporting 	$_reportingAPI
-	 */
-	protected $_paymentsAPI; 
-	protected $_profilesAPI; 
-	protected $_reportingAPI; 
+    protected $config;
 
+    /**
+     * API Objects
+     *
+     * Holds API objects with appropriate config
+     *
+     * @var \Beanstream\Payments    $paymentsAPI
+     * @var \Beanstream\Profiles    $profilesAPI
+     * @var \Beanstream\Reporting   $reportingAPI
+     */
+    protected $paymentsAPI;
+    protected $profilesAPI;
+    protected $reportingAPI;
 
     /**
      * Constructor
-     * 
+     *
      * @param string $merchantId Merchant ID
      * @param string $apiKey API Access Passcode
      * @param string $platform API Platform (default 'www')
      * @param string $version API Version (default 'v1')
      */
-    public function __construct($merchantId = '', $apiKey, $platform, $version) {
-		//set configs
-		$this->_config = new Configuration();
-		$this->_config->setMerchantId($merchantId);
-		$this->_config->setApiKey($apiKey);
-		$this->_config->setPlatform($platform);
-		$this->_config->setApiVersion($version);
+    public function __construct($merchantId, $apiKey, $platform, $version)
+    {
+        // Set configs
+        $this->config = new Configuration();
+        $this->config->setMerchantId($merchantId);
+        $this->config->setApiKey($apiKey);
+        $this->config->setPlatform($platform);
+        $this->config->setApiVersion($version);
     }
-	
 
-	/**
-	 * getConfig() function
-	 *
-	 * @return \Beanstream\Configuration this gateway's set config
-	 */
-	public function getConfig() {
-		return $this->_config;
-	}
-	
-	/**
-	 * payments() function
-	 * 
-	 * Public facing function to return the configured payment API
-	 * All comms with the Payments API will go through this function
-	 *
-	 * @return \Beanstream\Payments this gateway's payment api object
-	 */	
-	public function payments() {
-		//check to see if we already have it created 
-		if (is_null($this->_paymentsAPI)) {
-			//if we don't, create it
-			$this->_paymentsAPI = new Payments($this->_config);
-		}
-		return $this->_paymentsAPI;
-	}
+    /**
+     * getConfig() function
+     *
+     * @return \Beanstream\Configuration this gateway's set config
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
 
-	/**
-	 * profiles() function.
-	 * 
-	 * Public facing function to return the configured profiles API
-	 * All comms with the Profiles API will go through this function
-	 *
-	 * @return \Beanstream\Profiles this gateway's profiles api object
-	 */	
-	public function profiles() {
-		//check to see if we already have it created 
-		if (is_null($this->_profilesAPI)) {
-			//if we don't, create it
-			$this->_profilesAPI = new Profiles($this->_config);
-		}
-		return $this->_profilesAPI;
-	}
+    /**
+     * payments() function
+     *
+     * Public facing function to return the configured payment API
+     * All comms with the Payments API will go through this function
+     *
+     * @return \Beanstream\Payments this gateway's payment api object
+     */
+    public function payments()
+    {
+        // check to see if we already have it created
+        if (is_null($this->paymentsAPI)) {
+            // if we don't, create it
+            $this->paymentsAPI = new Payments($this->config);
+        }
 
+        return $this->paymentsAPI;
+    }
 
-	/**
-	 * reporting() function
-	 * 
-	 * Public facing function to return the configured reporting API
-	 * All comms with the Reporting API will go through this function
-	 *
-	 * @return \Beanstream\Reporting this gateway's reporting api object
-	 */	
-	public function reporting() {
-		//check to see if we already have it created 
-		if (is_null($this->_reportingAPI)) {
-			//if we don't, create it
-			$this->_reportingAPI = new Reporting($this->_config);
-		}
-		return $this->_reportingAPI;
-	}
-	
+    /**
+     * profiles() function.
+     *
+     * Public facing function to return the configured profiles API
+     * All comms with the Profiles API will go through this function
+     *
+     * @return \Beanstream\Profiles this gateway's profiles api object
+     */
+    public function profiles()
+    {
+        // check to see if we already have it created
+        if (is_null($this->profilesAPI)) {
+            // if we don't, create it
+            $this->profilesAPI = new Profiles($this->config);
+        }
+
+        return $this->profilesAPI;
+    }
+
+    /**
+     * reporting() function
+     *
+     * Public facing function to return the configured reporting API
+     * All comms with the Reporting API will go through this function
+     *
+     * @return \Beanstream\Reporting this gateway's reporting api object
+     */
+    public function reporting()
+    {
+        // check to see if we already have it created
+        if (is_null($this->reportingAPI)) {
+            // if we don't, create it
+            $this->reportingAPI = new Reporting($this->config);
+        }
+
+        return $this->reportingAPI;
+    }
 }
