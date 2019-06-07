@@ -33,7 +33,7 @@ class Configuration
     /**
      * Configuration: API Key
      *
-     * @var string $_apiKey
+     * @var string $apiKey
      */
     protected $apiKey;
 
@@ -83,7 +83,7 @@ class Configuration
      */
     public function getApiKey()
     {
-        return $this->_apiKey;
+        return $this->apiKey;
     }
 
     /**
