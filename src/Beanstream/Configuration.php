@@ -12,21 +12,21 @@ class Configuration
     /**
      * Configuration: API Version
      *
-     * @var string $_version
+     * @var string $version
      */
     protected $version = 'v1'; // default
 
     /**
      * Configuration: API Platform
      *
-     * @var string $_platform
+     * @var string $platform
      */
     protected $platform = 'api'; // default
 
     /**
      * Configuration: Merchant ID
      *
-     * @var string $_merchantId
+     * @var string $merchantId
      */
     protected $merchantId;
 
