@@ -1,81 +1,40 @@
 <?php
 
-namespace Beanstream;
+namespace Beanstream\Api;
+
+use Beanstream\Http\Configuration;
 
 /**
- * Reporting class to handle reports generation
+ * Handles generation of reports from Bambora
  *
- * @author Kevin Saliba
+ * @author Vincent Wilkie
  */
-class Reporting
+class Reporting extends Api
 {
     /**
-     * Reporting Endpoint object
+     * Create a new reporting instance.
      *
-     * @var string $endpoints
+     * @param  string                          $apiKey
+     * @param  \Beanstream\Http\Configuration  $config
+     * @return void
      */
-    protected $endpoints;
-
-    /**
-     * HttpConnector object
-     *
-     * @var \Beanstream\HttpConnector   $httpConnector
-     */
-    protected $httpConnector;
-
-    /**
-     * Constructor
-     *
-     * Inits the appropriate endpoint and httpconnector objects
-     * Sets all of the Reporting class properties
-     *
-     * @param \Beanstream\Configuration $config
-     */
-    public function __construct(Configuration $config)
+    public function __construct($apiKey, Configuration $config)
     {
-        // Init endpoint
-        $this->endpoints = new Endpoints($config->getPlatform(), $config->getApiVersion());
-
-        // Init http connector
-        $this->httpConnector = new HttpConnector(base64_encode($config->getMerchantId().':'.$config->getApiKey()));
+        parent::__construct($apiKey, $config);
     }
 
     /**
-     * getTransactions() function - Get transactions result array based on search criteria
-     * @link http://developer.beanstream.com/analyze-payments/search-specific-criteria/
+     * Query for transactions using a date range and optional search criteria
      *
-     * @param array $data search criteria
-     * @return array Result Transactions
+     * @param  array $searchQuery
+     * @return mixed
      */
-    public function getTransactions($data)
+    public function searchQuery($searchCriteria = [])
     {
-        // Get reporting endpoint
-        $endpoint =  $this->endpoints->getReportingURL();
+        $url = $this->endpoints->getReportingUrl();
 
-        // Process as is
-        $result = $this->httpConnector->processTransaction('POST', $endpoint, $data);
+        $result = $this->connector->sendRequest($url, $searchCriteria);
 
-        // Send back the result
-        return $result;
-    }
-
-    /**
-     * getTransaction() function - get a single transaction via 'Search'
-     *  // TODO not exactly working, returning call help desk, but incoming payload seems ok
-     * @link http://developer.beanstream.com/documentation/analyze-payments/
-     *
-     * @param string $transaction_id Transaction Id
-     * @return array Transaction data
-     */
-    public function getTransaction($transaction_id = '')
-    {
-        // Get reporting endpoint
-        $endpoint =  $this->endpoints->getPaymentUrl($transaction_id);
-
-        // Process as is
-        $result = $this->httpConnector->processTransaction('GET', $endpoint, null);
-
-        // Send back the result
         return $result;
     }
 }

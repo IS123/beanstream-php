@@ -48,7 +48,6 @@ class Configuration
     {
         // check to make sure string strlen is 9 containing only digits 0-9
         if (!preg_match('/^[0-9]{9}$/', $merchantId)) { // TODO switch to actual real assertmerchantId
-            // throw exception
             throw new ConfigurationException('Invalid Merchant ID provided: '.$merchantId. ' Expected 9 digits.');
         }
 

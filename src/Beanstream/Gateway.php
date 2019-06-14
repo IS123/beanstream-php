@@ -2,126 +2,77 @@
 
 namespace Beanstream;
 
-// TODO implement loader
-require_once 'Exception.php';
-require_once 'Configuration.php';
-require_once 'communications/Endpoints.php';
-require_once 'communications/HttpConnector.php';
-require_once 'api/Payments.php';
-require_once 'api/Profiles.php';
-require_once 'api/Reporting.php';
+use Exception;
+use Beanstream\Http\Configuration;
+use Beanstream\Api\Payments;
+use Beanstream\Api\Profiles;
+use Beanstream\Api\Reporting;
+use Beanstream\Api\Tokenization;
 
 /**
- * Gateway class - Main class to facilitate comms with Beanstream Gateway,
+ * Gateway class
  *
- * @author Kevin Saliba
+ * @author Vincent Wilkie
  */
 class Gateway
 {
     /**
-     * Config object
+     * The payments implementation.
      *
-     * Holds mid, apikey, platform, api version
-     *
-     * @var \Beanstream\Configuration   $config
+     * @var \Beanstream\Api\Payments
      */
-    protected $config;
+    public $payments = null;
 
     /**
-     * API Objects
+     * The reporting implementation.
      *
-     * Holds API objects with appropriate config
-     *
-     * @var \Beanstream\Payments    $paymentsAPI
-     * @var \Beanstream\Profiles    $profilesAPI
-     * @var \Beanstream\Reporting   $reportingAPI
+     * @var \Beanstream\Api\Reporting
      */
-    protected $paymentsAPI;
-    protected $profilesAPI;
-    protected $reportingAPI;
+    public $reporting = null;
 
     /**
-     * Constructor
+     * The profiles implementation.
      *
-     * @param string $merchantId Merchant ID
-     * @param string $apiKey API Access Passcode
-     * @param string $platform API Platform (default 'www')
-     * @param string $version API Version (default 'v1')
+     * @var \Beanstream\Api\Profiles
      */
-    public function __construct($merchantId, $apiKey, $platform, $version)
+    public $profiles = null;
+
+    /**
+     * The tokenization implementation.
+     *
+     * @var \Beanstream\Api\Tokenization
+     */
+    public $tokenization = null;
+
+    /**
+     * Create a new gateway instance.
+     *
+     * @param array $config
+     * @return void
+     */
+    public function __construct($config = [])
     {
-        // Set configs
-        $this->config = new Configuration();
-        $this->config->setMerchantId($merchantId);
-        $this->config->setApiKey($apiKey);
-        $this->config->setPlatform($platform);
-        $this->config->setApiVersion($version);
-    }
+        try {
+            $merchantID = $config['merchantID'] ?? '';
+            $apiVersion = $config['apiVersion'] ?? 'v1';
+            $platform = $config['platform'] ?? 'api';
 
-    /**
-     * getConfig() function
-     *
-     * @return \Beanstream\Configuration this gateway's set config
-     */
-    public function getConfig()
-    {
-        return $this->config;
-    }
+            $apiKeys = $config['apiKeys'] ?? [];
+            $paymentsKey = $apiKeys['payments'] ?? '';
+            $reportingKey = $apiKeys['reporting'] ?? '';
+            $profilesKey = $apiKeys['profiles'] ?? '';
 
-    /**
-     * payments() function
-     *
-     * Public facing function to return the configured payment API
-     * All comms with the Payments API will go through this function
-     *
-     * @return \Beanstream\Payments this gateway's payment api object
-     */
-    public function payments()
-    {
-        // check to see if we already have it created
-        if (is_null($this->paymentsAPI)) {
-            // if we don't, create it
-            $this->paymentsAPI = new Payments($this->config);
+            $configuration = new Configuration();
+            $configuration->setMerchantID($merchantID);
+            $configuration->setApiVersion($apiVersion);
+            $configuration->setPlatform($platform);
+
+            $this->payments = new Payments($paymentsKey, $configuration);
+            $this->reporting = new Reporting($reportingKey, $configuration);
+            $this->profiles = new Profiles($profilesKey, $configuration);
+            $this->tokenization = new Tokenization($paymentsKey, $configuration);
+        } catch (Exception $e) {
+            throw new Exception(get_class($e).': '.$e->getMessage);
         }
-
-        return $this->paymentsAPI;
-    }
-
-    /**
-     * profiles() function.
-     *
-     * Public facing function to return the configured profiles API
-     * All comms with the Profiles API will go through this function
-     *
-     * @return \Beanstream\Profiles this gateway's profiles api object
-     */
-    public function profiles()
-    {
-        // check to see if we already have it created
-        if (is_null($this->profilesAPI)) {
-            // if we don't, create it
-            $this->profilesAPI = new Profiles($this->config);
-        }
-
-        return $this->profilesAPI;
-    }
-
-    /**
-     * reporting() function
-     *
-     * Public facing function to return the configured reporting API
-     * All comms with the Reporting API will go through this function
-     *
-     * @return \Beanstream\Reporting this gateway's reporting api object
-     */
-    public function reporting()
-    {
-        // check to see if we already have it created
-        if (is_null($this->reportingAPI)) {
-            // if we don't, create it
-            $this->reportingAPI = new Reporting($this->config);
-        }
-
-        return $this->reportingAPI;
     }
 }
