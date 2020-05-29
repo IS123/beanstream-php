@@ -132,7 +132,7 @@ class Endpoints
      */
     public function getTokenizationUrl()
     {
-        $baseUrl = ($this->platform === 'www' ? self::BASE_URL_BEANSTREAM : $this->baseUrl);
+        $baseUrl = 'https://'.sprintf(($this->platform === 'www' ? self::BASE_URL_BEANSTREAM : self::BASE_URL_BAMBORANA), $this->platform);
 
         return $baseUrl.'/scripts/tokenization/tokens';
     }
